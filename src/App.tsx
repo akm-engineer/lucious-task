@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   DndContext,
@@ -29,9 +29,10 @@ import { TaskForm } from './components/TaskForm';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { TaskListItem } from './components/TaskListItem';
 import { TaskDetailPanel } from './components/TaskDetailPanel';
-import { Analytics } from './components/Analytics';
-import { TaskCard } from './components/TaskCard';
 
+import { TaskCard } from './components/TaskCard';
+import { AnalyticsSkeleton, StatsBarSkeleton, TaskCardsSkeleton, TaskListSkeleton } from './components/Skelton';
+const Analytics = lazy(() => import('./components/Analytics').then(m => ({ default: m.Analytics })));
 // ─── Sortable wrappers ────────────────────────────────────────────────────────
 
 interface SortableListItemProps {
@@ -106,7 +107,7 @@ function EmptyState({ hasFilters, onAdd }: { hasFilters: boolean; onAdd: () => v
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="flex flex-col items-center justify-center py-24 md:py-4 text-center"
+      className="flex flex-col items-center justify-center py-4 text-center"
     >
       <div className="relative w-24 h-24 rounded-3xl bg-white/80 dark:bg-white/[0.04] border border-white/60 dark:border-white/[0.07] shadow-xl flex items-center justify-center mb-6">
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10" />
@@ -158,6 +159,11 @@ export default function App() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
+  const [isReady, setIsReady] = useState(false)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsReady(true)
+  }, [])
 
   // Derived stats
   const stats = useMemo(
@@ -242,17 +248,16 @@ export default function App() {
         {/* Tab bar */}
         <div className="flex items-center bg-white/80 dark:bg-white/[0.04] backdrop-blur-sm rounded-2xl border border-white/60 dark:border-white/[0.07] shadow-sm p-1 gap-1">
           {([
-            { id: 'tasks',    label: 'Tasks',    icon: <Kanban size={15} /> },
+            { id: 'tasks', label: 'Tasks', icon: <Kanban size={15} /> },
             { id: 'insights', label: 'Insights', icon: <TrendingUp size={15} /> },
           ] as const).map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-indigo-500/25'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
+              className={`relative flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${activeTab === tab.id
+                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-indigo-500/25'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
             >
               {tab.icon}
               {tab.label}
@@ -271,7 +276,9 @@ export default function App() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
             >
-              <Analytics tasks={tasks} />
+              <Suspense fallback={<AnalyticsSkeleton />}>
+                <Analytics tasks={tasks} />
+              </Suspense>
             </motion.div>
           ) : (
             <motion.div
@@ -282,11 +289,13 @@ export default function App() {
               transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
               className="space-y-5"
             >
-              <StatsBar
+              {isReady ? (<StatsBar
                 total={stats.total}
                 pending={stats.pending}
                 completed={stats.completed}
-              />
+              />) : (
+                <StatsBarSkeleton />
+              )}
 
               <SearchFilter
                 search={search}
@@ -297,7 +306,9 @@ export default function App() {
                 onFilterPriority={setFilterPriority}
               />
 
-              <DndContext
+              {!isReady ? (
+                viewMode === "list" ? <TaskListSkeleton /> : <TaskCardsSkeleton />
+              ) : (<DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
@@ -345,7 +356,7 @@ export default function App() {
                     </div>
                   </SortableContext>
                 )}
-              </DndContext>
+              </DndContext>)}
             </motion.div>
           )}
 

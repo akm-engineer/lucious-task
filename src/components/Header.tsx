@@ -18,7 +18,7 @@ export function Header({ theme, viewMode, onToggleTheme, onChangeView, onAddTask
 
           {/* Logo */}
           <div className="flex items-center flex-shrink-0">
-            <img src={liciousLogo} alt="LIcious" className="h-5 sm:h-6 w-auto dark:brightness-0 dark:invert" />
+            <img src={liciousLogo} alt="Licious" className="h-5 sm:h-6 w-auto dark:brightness-0 dark:invert" />
           </div>
 
           {/* Desktop view toggle */}
