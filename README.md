@@ -2,6 +2,9 @@
 
 A polished task management dashboard built with React 19, TypeScript, and Tailwind CSS v4. Features drag-and-drop reordering, rich analytics, dark/light mode, and smooth animations throughout.
 
+## Deployed Link
+https://lucious-management.netlify.app/
+
 ## Features
 
 - **CRUD** — Create, edit, delete, and toggle tasks
