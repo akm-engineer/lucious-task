@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Loader2, Wand2, AlertCircle, Copy, CalendarMinus } from 'lucide-react';
-import type { Priority, Task, TaskFormData } from '../types';
+import type { Priority, Task, TaskFormData } from '../../../core/types';
 
 const TITLE_MAX = 100;
 const DESC_MAX = 500;
@@ -13,12 +13,7 @@ interface TaskFormProps {
   onClose: () => void;
 }
 
-const priorityConfig: {
-  value: Priority;
-  label: string;
-  gradient: string;
-  inactiveClass: string;
-}[] = [
+const priorityConfig: { value: Priority; label: string; gradient: string; inactiveClass: string }[] = [
   {
     value: 'low',
     label: '🟢 Low',
@@ -39,66 +34,51 @@ const priorityConfig: {
   },
 ];
 
-// ─── Inline warning banner ────────────────────────────────────────────────────
 function Warning({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: -6, height: 0 }}
-      animate={{ opacity: 1, y: 0, height: 'auto' }}
-      exit={{ opacity: 0, y: -4, height: 0 }}
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
       transition={{ duration: 0.2 }}
       className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/80 dark:border-amber-600/30"
     >
-      <span className="flex-shrink-0 text-amber-500 mt-0.5">{icon}</span>
+      <span className="shrink-0 text-amber-500 mt-0.5">{icon}</span>
       <p className="text-xs font-medium text-amber-700 dark:text-amber-400 leading-relaxed">{children}</p>
     </motion.div>
   );
 }
 
-// ─── Character counter ────────────────────────────────────────────────────────
 function CharCount({ current, max }: { current: number; max: number }) {
   const pct = current / max;
   const color =
     pct >= 0.95 ? 'text-rose-500 dark:text-rose-400 font-bold' :
     pct >= 0.8  ? 'text-amber-500 dark:text-amber-400 font-semibold' :
                   'text-slate-400 dark:text-slate-500';
-  return (
-    <span className={`text-[11px] tabular-nums transition-colors ${color}`}>
-      {current}/{max}
-    </span>
-  );
+  return <span className={`text-[11px] tabular-nums transition-colors ${color}`}>{current}/{max}</span>;
 }
 
-// ─── Main form ────────────────────────────────────────────────────────────────
 export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: TaskFormProps) {
-  const [title, setTitle] = useState(editingTask?.title ?? '');
+  const [title,       setTitle]       = useState(editingTask?.title ?? '');
   const [description, setDescription] = useState(editingTask?.description ?? '');
-  const [priority, setPriority] = useState<Priority>(editingTask?.priority ?? 'medium');
-  const [dueDate, setDueDate] = useState(editingTask?.dueDate ?? '');
-  const [errors, setErrors] = useState<Partial<Record<keyof TaskFormData, string>>>({});
-  const [submitting, setSubmitting] = useState(false);
+  const [priority,    setPriority]    = useState<Priority>(editingTask?.priority ?? 'medium');
+  const [dueDate,     setDueDate]     = useState(editingTask?.dueDate ?? '');
+  const [errors,      setErrors]      = useState<Partial<Record<keyof TaskFormData, string>>>({});
+  const [submitting,  setSubmitting]  = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setTimeout(() => titleRef.current?.focus(), 100); }, []);
 
   const today = new Date().toISOString().split('T')[0];
-
-  // ── Derived warnings (non-blocking) ──
   const trimmedTitle = title.trim();
 
-  const isDuplicate =
-    trimmedTitle.length > 0 &&
-    existingTasks.some(
-      t => t.id !== editingTask?.id &&
-           t.title.trim().toLowerCase() === trimmedTitle.toLowerCase(),
-    );
-
-  const isPastDate = !!dueDate && dueDate < today;
-
+  const isDuplicate = trimmedTitle.length > 0 && existingTasks.some(
+    t => t.id !== editingTask?.id && t.title.trim().toLowerCase() === trimmedTitle.toLowerCase(),
+  );
+  const isPastDate    = !!dueDate && dueDate < today;
   const titleNearLimit = title.length >= Math.floor(TITLE_MAX * 0.8);
   const descNearLimit  = description.length >= Math.floor(DESC_MAX * 0.8);
 
-  // ── Validation (blocking) ──
   const validate = (): boolean => {
     const next: typeof errors = {};
     if (!trimmedTitle) next.title = 'Title cannot be empty.';
@@ -137,7 +117,7 @@ export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: Task
           className="w-full sm:max-w-lg max-h-[95svh] flex flex-col bg-white/95 dark:bg-[#13131f]/95 backdrop-blur-xl rounded-t-3xl sm:rounded-3xl shadow-2xl border-0 sm:border border-white/60 dark:border-white/[0.08] overflow-hidden"
         >
           {/* Header */}
-          <div className="relative px-6 py-5 border-b border-slate-100/80 dark:border-white/[0.06] flex-shrink-0">
+          <div className="relative px-6 py-5 border-b border-slate-100/80 dark:border-white/[0.06] shrink-0">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-md shadow-indigo-500/30">
                 <Wand2 size={14} className="text-white" />
@@ -154,11 +134,11 @@ export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: Task
             </button>
           </div>
 
-          {/* Scrollable body */}
+          {/* Body */}
           <div className="flex-1 overflow-y-auto overscroll-contain">
             <form id="task-form" onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
 
-              {/* ── Title ── */}
+              {/* Title */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -171,26 +151,15 @@ export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: Task
                   type="text"
                   value={title}
                   maxLength={TITLE_MAX}
-                  onChange={e => {
-                    setTitle(e.target.value);
-                    if (errors.title) setErrors(p => ({ ...p, title: undefined }));
-                  }}
+                  onChange={e => { setTitle(e.target.value); if (errors.title) setErrors(p => ({ ...p, title: undefined })); }}
                   placeholder="What needs to be done?"
                   className={`w-full px-4 py-3 text-sm rounded-xl bg-slate-50/80 dark:bg-white/[0.05] border text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-transparent transition-all ${
-                    errors.title
-                      ? 'border-rose-400 dark:border-rose-500 ring-1 ring-rose-400/30'
-                      : 'border-slate-200/80 dark:border-white/[0.08]'
+                    errors.title ? 'border-rose-400 dark:border-rose-500 ring-1 ring-rose-400/30' : 'border-slate-200/80 dark:border-white/[0.08]'
                   }`}
                 />
                 <AnimatePresence mode="wait">
                   {errors.title ? (
-                    <motion.p
-                      key="err"
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="mt-1.5 text-xs text-rose-500 font-medium flex items-center gap-1"
-                    >
+                    <motion.p key="err" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-1.5 text-xs text-rose-500 font-medium flex items-center gap-1">
                       <AlertCircle size={11} /> {errors.title}
                     </motion.p>
                   ) : isDuplicate ? (
@@ -203,12 +172,10 @@ export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: Task
                 </AnimatePresence>
               </div>
 
-              {/* ── Description ── */}
+              {/* Description */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    Description
-                  </label>
+                  <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Description</label>
                   {descNearLimit && <CharCount current={description.length} max={DESC_MAX} />}
                 </div>
                 <textarea
@@ -221,13 +188,10 @@ export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: Task
                 />
               </div>
 
-              {/* ── Priority + Due Date ── */}
+              {/* Priority + Due Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Priority */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
-                    Priority
-                  </label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Priority</label>
                   <div className="flex gap-1.5">
                     {priorityConfig.map(p => (
                       <button
@@ -244,7 +208,6 @@ export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: Task
                   </div>
                 </div>
 
-                {/* Due Date */}
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                     Due Date <span className="text-rose-400">*</span>
@@ -252,27 +215,16 @@ export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: Task
                   <input
                     type="date"
                     value={dueDate}
-                    onChange={e => {
-                      setDueDate(e.target.value);
-                      if (errors.dueDate) setErrors(p => ({ ...p, dueDate: undefined }));
-                    }}
+                    onChange={e => { setDueDate(e.target.value); if (errors.dueDate) setErrors(p => ({ ...p, dueDate: undefined })); }}
                     className={`w-full px-4 py-3 text-sm rounded-xl bg-slate-50/80 dark:bg-white/[0.05] border text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-transparent transition-all ${
-                      errors.dueDate
-                        ? 'border-rose-400 dark:border-rose-500 ring-1 ring-rose-400/30'
-                        : isPastDate
-                          ? 'border-amber-400 dark:border-amber-500/60'
-                          : 'border-slate-200/80 dark:border-white/[0.08]'
+                      errors.dueDate ? 'border-rose-400 dark:border-rose-500 ring-1 ring-rose-400/30' :
+                      isPastDate    ? 'border-amber-400 dark:border-amber-500/60' :
+                                      'border-slate-200/80 dark:border-white/[0.08]'
                     }`}
                   />
                   <AnimatePresence mode="wait">
                     {errors.dueDate ? (
-                      <motion.p
-                        key="err"
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="mt-1.5 text-xs text-rose-500 font-medium flex items-center gap-1"
-                      >
+                      <motion.p key="err" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-1.5 text-xs text-rose-500 font-medium flex items-center gap-1">
                         <AlertCircle size={11} /> {errors.dueDate}
                       </motion.p>
                     ) : isPastDate ? (
@@ -289,8 +241,8 @@ export function TaskForm({ editingTask, existingTasks, onSubmit, onClose }: Task
             </form>
           </div>
 
-          {/* Footer — sticky at bottom */}
-          <div className="px-6 py-4 border-t border-slate-100/80 dark:border-white/[0.06] flex gap-3 flex-shrink-0">
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-slate-100/80 dark:border-white/[0.06] flex gap-3 shrink-0">
             <button
               type="button"
               onClick={onClose}

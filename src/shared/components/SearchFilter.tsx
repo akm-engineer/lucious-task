@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Search, X } from 'lucide-react';
-import type { FilterPriority, FilterStatus } from '../types';
+import type { FilterPriority, FilterStatus } from '../../core/types';
 
 interface SearchFilterProps {
   search: string;
@@ -11,67 +11,17 @@ interface SearchFilterProps {
   onFilterPriority: (v: FilterPriority) => void;
 }
 
-const statusOptions: {
-  value: FilterStatus;
-  label: string;
-  activeGradient: string;
-  activeShadow: string;
-}[] = [
-  {
-    value: 'all',
-    label: 'All',
-    activeGradient: 'from-slate-600 to-zinc-800',
-    activeShadow: 'shadow-slate-700/40',
-  },
-  {
-    value: 'pending',
-    label: 'Pending',
-    activeGradient: 'from-amber-500 to-orange-500',
-    activeShadow: 'shadow-amber-500/30',
-  },
-  {
-    value: 'completed',
-    label: 'Completed',
-    activeGradient: 'from-teal-500 to-cyan-500',
-    activeShadow: 'shadow-teal-500/30',
-  },
+const statusOptions: { value: FilterStatus; label: string; activeGradient: string; activeShadow: string }[] = [
+  { value: 'all',       label: 'All',       activeGradient: 'from-slate-600 to-zinc-800',  activeShadow: 'shadow-slate-700/40' },
+  { value: 'pending',   label: 'Pending',   activeGradient: 'from-amber-500 to-orange-500', activeShadow: 'shadow-amber-500/30' },
+  { value: 'completed', label: 'Completed', activeGradient: 'from-teal-500 to-cyan-500',   activeShadow: 'shadow-teal-500/30'  },
 ];
 
-const priorityOptions: {
-  value: FilterPriority;
-  label: string;
-  dot: string;
-  activeGradient: string;
-  activeShadow: string;
-}[] = [
-  {
-    value: 'all',
-    label: 'All',
-    dot: '',
-    activeGradient: 'from-fuchsia-500 to-pink-600',
-    activeShadow: 'shadow-fuchsia-500/30',
-  },
-  {
-    value: 'low',
-    label: 'Low',
-    dot: 'bg-emerald-400',
-    activeGradient: 'from-emerald-500 to-teal-500',
-    activeShadow: 'shadow-emerald-500/30',
-  },
-  {
-    value: 'medium',
-    label: 'Medium',
-    dot: 'bg-amber-400',
-    activeGradient: 'from-amber-500 to-orange-500',
-    activeShadow: 'shadow-amber-500/30',
-  },
-  {
-    value: 'high',
-    label: 'High',
-    dot: 'bg-rose-400',
-    activeGradient: 'from-rose-500 to-red-500',
-    activeShadow: 'shadow-rose-500/30',
-  },
+const priorityOptions: { value: FilterPriority; label: string; dot: string; activeGradient: string; activeShadow: string }[] = [
+  { value: 'all',    label: 'All',    dot: '',              activeGradient: 'from-fuchsia-500 to-pink-600',  activeShadow: 'shadow-fuchsia-500/30' },
+  { value: 'low',    label: 'Low',    dot: 'bg-emerald-400', activeGradient: 'from-emerald-500 to-teal-500',  activeShadow: 'shadow-emerald-500/30' },
+  { value: 'medium', label: 'Medium', dot: 'bg-amber-400',   activeGradient: 'from-amber-500 to-orange-500',  activeShadow: 'shadow-amber-500/30'   },
+  { value: 'high',   label: 'High',   dot: 'bg-rose-400',    activeGradient: 'from-rose-500 to-red-500',      activeShadow: 'shadow-rose-500/30'    },
 ];
 
 export function SearchFilter({
@@ -87,10 +37,7 @@ export function SearchFilter({
 
       {/* Search */}
       <div className="relative">
-        <Search
-          size={15}
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
-        />
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
         <input
           type="text"
           value={search}
@@ -108,11 +55,9 @@ export function SearchFilter({
         )}
       </div>
 
-      {/* Status — full width segmented */}
+      {/* Status */}
       <div>
-        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 px-0.5">
-          Status
-        </p>
+        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 px-0.5">Status</p>
         <div className="flex items-center bg-slate-100/80 dark:bg-white/[0.05] rounded-xl p-1 gap-1">
           {statusOptions.map(opt => {
             const isActive = filterStatus === opt.value;
@@ -121,9 +66,7 @@ export function SearchFilter({
                 key={opt.value}
                 onClick={() => onFilterStatus(opt.value)}
                 className={`relative flex-1 py-2 rounded-lg text-xs font-bold transition-colors duration-150 ${
-                  isActive
-                    ? 'text-white'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                  isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {isActive && (
@@ -140,11 +83,9 @@ export function SearchFilter({
         </div>
       </div>
 
-      {/* Priority — full width segmented */}
+      {/* Priority */}
       <div>
-        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 px-0.5">
-          Priority
-        </p>
+        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 px-0.5">Priority</p>
         <div className="flex items-center bg-slate-100/80 dark:bg-white/[0.05] rounded-xl p-1 gap-1">
           {priorityOptions.map(opt => {
             const isActive = filterPriority === opt.value;
@@ -153,9 +94,7 @@ export function SearchFilter({
                 key={opt.value}
                 onClick={() => onFilterPriority(opt.value)}
                 className={`relative flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition-colors duration-150 ${
-                  isActive
-                    ? 'text-white'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                  isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {isActive && (
@@ -167,7 +106,7 @@ export function SearchFilter({
                 )}
                 <span className="relative z-10 flex items-center gap-1.5">
                   {opt.dot && (
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isActive ? 'bg-white/70' : opt.dot}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-white/70' : opt.dot}`} />
                   )}
                   {opt.label}
                 </span>

@@ -1,6 +1,6 @@
 import { Sun, Moon, LayoutList, LayoutGrid, Plus } from 'lucide-react';
-import liciousLogo from '../assets/licious-logo.svg';
-import type { ViewMode } from '../types';
+import liciousLogo from '../../assets/licious-logo.svg';
+import type { ViewMode } from '../../core/types';
 
 interface HeaderProps {
   theme: 'light' | 'dark';
@@ -17,8 +17,8 @@ export function Header({ theme, viewMode, onToggleTheme, onChangeView, onAddTask
         <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
 
           {/* Logo */}
-          <div className="flex items-center flex-shrink-0">
-            <img src={liciousLogo} alt="Licious" className="h-5 sm:h-6 w-auto dark:brightness-0 dark:invert" />
+          <div className="flex items-center shrink-0">
+            <img src={liciousLogo} alt="" width="48" height="20" className="h-5 sm:h-6 w-auto dark:brightness-0 dark:invert" />
           </div>
 
           {/* Desktop view toggle */}
@@ -48,7 +48,7 @@ export function Header({ theme, viewMode, onToggleTheme, onChangeView, onAddTask
           </div>
 
           {/* Right */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Mobile view toggle */}
             <button
               onClick={() => onChangeView(viewMode === 'list' ? 'card' : 'list')}
@@ -69,7 +69,7 @@ export function Header({ theme, viewMode, onToggleTheme, onChangeView, onAddTask
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
 
-            {/* New Task — gradient */}
+            {/* New Task */}
             <button
               onClick={onAddTask}
               className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:-translate-y-px active:translate-y-0 transition-all duration-200"

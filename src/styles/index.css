@@ -13,9 +13,7 @@ html {
   scroll-behavior: smooth;
 }
 
-button,
-[role="button"],
-label[for] {
+button {
   cursor: pointer;
 }
 

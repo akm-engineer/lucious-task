@@ -33,14 +33,11 @@ export function ConfirmDialog({
           onClick={e => e.stopPropagation()}
           className="w-full max-w-sm bg-white/95 dark:bg-[#13131f]/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 dark:border-white/[0.08] p-6 text-center"
         >
-          {/* Icon */}
           <div className="flex items-center justify-center mx-auto w-14 h-14 rounded-2xl bg-rose-500/10 dark:bg-rose-500/15 ring-1 ring-rose-500/20 mb-4">
             <Trash2 size={22} className="text-rose-500" />
           </div>
-
           <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1.5">{title}</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{message}</p>
-
           <div className="flex gap-3 mt-6">
             <button
               onClick={onCancel}
