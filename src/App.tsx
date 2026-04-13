@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   DndContext,
@@ -142,6 +142,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'tasks' | 'insights'>('tasks');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [filterPriority, setFilterPriority] = useState<FilterPriority>('all');
 
@@ -155,6 +156,12 @@ export default function App() {
   // Confirm delete
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  //debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -166,43 +173,55 @@ export default function App() {
   }, [])
 
   // Derived stats
-  const stats = useMemo(
-    () => ({
+  const stats = useMemo(() => {
+    let pending = 0,
+      completed = 0;
+
+    for (const t of tasks) {
+      if (t.status === "pending") pending++;
+      else completed++;
+    }
+
+    return {
       total: tasks.length,
-      pending: tasks.filter(t => t.status === 'pending').length,
-      completed: tasks.filter(t => t.status === 'completed').length,
-    }),
-    [tasks],
-  );
+      pending,
+      completed,
+    };
+  }, [tasks]);
 
   // Filtered tasks
   const filteredTasks = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    return tasks.filter(task => {
-      if (filterStatus !== 'all' && task.status !== filterStatus) return false;
-      if (filterPriority !== 'all' && task.priority !== filterPriority) return false;
-      if (
-        q &&
-        !task.title.toLowerCase().includes(q) &&
-        !task.description.toLowerCase().includes(q)
-      )
-        return false;
+    if (!tasks.length) return [];
+
+    const q = debouncedSearch.toLowerCase().trim();
+
+    return tasks.filter(({ status, priority, title, description }) => {
+      if (filterStatus !== "all" && status !== filterStatus) return false;
+      if (filterPriority !== "all" && priority !== filterPriority) return false;
+
+      if (q) {
+        const text = `${title} ${description}`.toLowerCase();
+        if (!text.includes(q)) return false;
+      }
+
       return true;
     });
-  }, [tasks, search, filterStatus, filterPriority]);
+  }, [tasks, debouncedSearch, filterStatus, filterPriority]);
+
 
   const hasFilters = search !== '' || filterStatus !== 'all' || filterPriority !== 'all';
 
   // Handlers
-  const handleAddTask = () => {
+  const handleAddTask = useCallback(() => {
     setEditingTask(null);
     setShowForm(true);
-  };
+  }, []);
 
-  const handleEditTask = (task: Task) => {
+  const handleEditTask = useCallback((task: any) => {
     setEditingTask(task);
     setShowForm(true);
-  };
+  }, []);
+
 
   const handleFormSubmit = (data: TaskFormData) => {
     if (editingTask) {
@@ -214,24 +233,29 @@ export default function App() {
     setEditingTask(null);
   };
 
-  const handleDeleteRequest = (id: string) => {
+  const handleDeleteRequest = useCallback((id: string) => {
     setDeletingId(id);
-  };
+  }, []);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     if (deletingId) deleteTask(deletingId);
     setDeletingId(null);
-  };
+  }, [deletingId, deleteTask]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const oldIdx = tasks.findIndex(t => t.id === active.id);
-    const newIdx = tasks.findIndex(t => t.id === over.id);
-    if (oldIdx !== -1 && newIdx !== -1) {
-      reorderTasks(arrayMove(tasks, oldIdx, newIdx));
-    }
-  };
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const oldIdx = tasks.findIndex((t) => t.id === active.id);
+      const newIdx = tasks.findIndex((t) => t.id === over.id);
+
+      if (oldIdx !== -1 && newIdx !== -1) {
+        reorderTasks(arrayMove(tasks, oldIdx, newIdx));
+      }
+    },
+    [tasks, reorderTasks]
+  );
 
   return (
     <div className="min-h-screen transition-colors duration-300">
